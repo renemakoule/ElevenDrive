@@ -53,7 +53,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE0OUYwNDRENUQ4MkQzNTUKUldSVjA0SmRUUVNmRlBTa0N6SkFOL1lFT29YbStSMWt3Q25XVGlrYTRhc3dxVG1uYU9DTXJTeWEK",
       "endpoints": [
-        "https://github.com/REMPLACER_OWNER/REMPLACER_REPO/releases/latest/download/latest.json"
+        "https://github.com/renemakoule/ElevenDrive/releases/latest/download/latest.json"
       ]
     }
   }
