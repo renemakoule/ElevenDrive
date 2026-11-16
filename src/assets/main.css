@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(1 0 180);
+  --foreground: oklch(0 0 0);
+  --muted: oklch(0.93 0.015 264.492);
+  --muted-foreground: oklch(0.378 0.022 264.268);
+  --popover: oklch(1 0 180);
+  --popover-foreground: oklch(0 0 0);
+  --card: oklch(98.511% 0.00011 271.152);
+  --card-foreground: oklch(0 0 0);
+  --border: oklch(0.946 0.001 264.549);
+  --input: oklch(0.946 0.001 264.549);
+  --primary: oklch(0.461 0.07 245.64);
+  --primary-foreground: oklch(1 0 180);
+  --secondary: oklch(0.929 0.003 264.541);
+  --secondary-foreground: oklch(0.42 0.013 264.424);
+  --accent: oklch(0.854 0.012 264.504);
+  --accent-foreground: oklch(0.331 0.018 264.282);
+  --destructive: oklch(0.553 0.221 28.621);
+  --destructive-foreground: oklch(1 0 180);
+  --ring: oklch(0.461 0.07 245.64);
+  --chart-1: oklch(0.461 0.07 245.64);
+  --chart-2: oklch(0.929 0.003 264.541);
+  --chart-3: oklch(0.854 0.012 264.504);
+  --chart-4: oklch(0.953 0.002 264.544);
+  --chart-5: oklch(0.461 0.075 245.9);
+  
+  /* Brand colors aligned with MaryamE-logistic dashboard */
+  --brand-emerald: #10b981;
+  --brand-emerald-dark: #059669;
+  --brand-emerald-light: #ecfdf5;
+  --brand-emerald-border: #a7f3d0;
+}
+
+.dark,
+html.dark,
+:root.dark,
+[data-theme="dark"] {
+  --radius: 0.5rem;
+  --background: oklch(0.138 0.014 260.449);
+  --foreground: oklch(0.992 0.001 264.549);
+  --muted: oklch(0.181 0.024 263.719);
+  --muted-foreground: oklch(0.779 0.018 264.463);
+  --popover: oklch(0.138 0.014 260.449);
+  --popover-foreground: oklch(0.992 0.001 264.549);
+  --card: oklch(9.618% 0.00936 258.726);
+  --card-foreground: oklch(1 0 180);
+  --border: oklch(0.247 0.002 264.528);
+  --input: oklch(0.247 0.002 264.528);
+  --primary: oklch(0.461 0.07 245.64);
+  --primary-foreground: oklch(1 0 180);
+  --secondary: oklch(0.202 0.005 264.466);
+  --secondary-foreground: oklch(0.75 0.011 264.499);
+  --accent: oklch(0.272 0.014 264.308);
+  --accent-foreground: oklch(0.804 0.016 264.478);
+  --destructive: oklch(0.59 0.236 28.667);
+  --destructive-foreground: oklch(1 0 180);
+  --ring: oklch(0.461 0.07 245.64);
+  --chart-1: oklch(0.461 0.07 245.64);
+  --chart-2: oklch(0.202 0.005 264.466);
+  --chart-3: oklch(0.272 0.014 264.308);
+  --chart-4: oklch(0.234 0.006 264.454);
+  --chart-5: oklch(0.461 0.075 245.9);
+
+  --brand-emerald: #10b981;
+  --brand-emerald-dark: #34d399;
+  --brand-emerald-light: #064e3b;
+  --brand-emerald-border: #047857;
+}
+
+
+/* Mobile safe areas & hidden horizontal scrollbar for KPI/tabs carousels */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom scrollbars for high-density tables */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* KBD badge styling for quick keyboard ergonomics */
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.70rem;
+  font-weight: 600;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  background-color: var(--muted);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+  color: var(--muted-foreground);
+}
+
+/* Print styles for 80mm ESC/POS Thermal Printer and A4 Documents */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #thermal-ticket-container, #thermal-ticket-container *,
+  #thermal-rapport-container, #thermal-rapport-container *,
+  #contract-a4-container, #contract-a4-container *,
+  #attendance-sheet-container, #attendance-sheet-container *,
+  #a5-receipt-container, #a5-receipt-container *,
+  #bordereau-a4-container, #bordereau-a4-container * {
+    visibility: visible;
+  }
+  #thermal-ticket-container,
+  #thermal-rapport-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    margin: 0;
+    padding: 0;
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  #contract-a4-container,
+  #attendance-sheet-container,
+  #a5-receipt-container,
+  #bordereau-a4-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 10mm;
+    color: #000 !important;
+    background: #fff !important;
+  }
+}
+

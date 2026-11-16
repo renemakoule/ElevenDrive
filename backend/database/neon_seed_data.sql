@@ -1,0 +1,12 @@
+-- ==============================================================================
+-- AutoSchool - Initialisation Réelle (Aucune donnée mock ni fausse donnée)
+-- ==============================================================================
+-- Conformément aux exigences de production, ce fichier ne contient aucune donnée
+-- fictive, utilisateur par défaut ou fausse transaction.
+--
+-- Les auto-écoles et leurs comptes administrateurs/directeurs sont créés
+-- dynamiquement et de façon sécurisée via l'API Go d'onboarding :
+-- POST /api/auth/register-school
+--
+-- Les agences, utilisateurs et tarifs sont ensuite administrés via les endpoints
+-- authentifiés correspondants.

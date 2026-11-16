@@ -1,0 +1,88 @@
+================================================================================
+CONTRAT DE LICENCE UTILISATEUR FINAL (CLUF / EULA)
+ET CONDITIONS GÉNÉRALES D'UTILISATION - ELEVENDRIVE
+================================================================================
+
+VEUILLEZ LIRE ATTENTIVEMENT LE PRÉSENT CONTRAT DE LICENCE AVANT D'INSTALLER OU 
+D'UTILISER CE LOGICIEL. EN INSTALLANT, COPIANT OU UTILISANT LE LOGICIEL 
+"ELEVENDRIVE", VOUS ACCEPTEZ D'ÊTRE LIÉ PAR LES TERMES DU PRÉSENT CONTRAT. 
+SI VOUS N'ACCEPTEZ PAS CES TERMES, N'INSTALLEZ PAS ET N'UTILISEZ PAS LE LOGICIEL.
+
+--------------------------------------------------------------------------------
+ARTICLE 1. OBJET ET OCTROI DE LICENCE
+--------------------------------------------------------------------------------
+Le logiciel "ElevenDrive" (ci-après désigné "le Logiciel") est une solution 
+professionnelle de gestion d'auto-école (gestion des candidats, caisse, cours de 
+code, plannings de conduite, examens et synchronisation hybride).
+L'éditeur concède à l'établissement souscripteur (l'Auto-École) une licence 
+d'utilisation non exclusive, non transférable et révocable, strictement limitée 
+à l'usage interne professionnel de ses agences et postes autorisés.
+
+--------------------------------------------------------------------------------
+ARTICLE 2. PROPRIÉTÉ INTELLECTUELLE ET RESTRICTIONS
+--------------------------------------------------------------------------------
+1. Le Logiciel, sa structure, son code source, son interface graphique, ses 
+   bases de données intégrées et sa documentation sont la propriété intellectuelle 
+   exclusive de l'Éditeur et sont protégés par les lois nationales et internationales 
+   relatives au droit d'auteur.
+2. Sauf autorisation écrite préalable, il est formellement interdit de :
+   a) Désosser, décompiler, désassembler ou tenter d'obtenir le code source.
+   b) Modifier, adapter, traduire ou créer des œuvres dérivées du Logiciel.
+   c) Louer, sous-licencier, vendre, prêter ou redistribuer le Logiciel à un tiers.
+   d) Contourner ou altérer les mécanismes de sécurité, d'empreinte machine ou de verrouillage.
+
+--------------------------------------------------------------------------------
+ARTICLE 3. GESTION DES DONNÉES PERSONNELLES ET CONFIDENTIALITÉ
+--------------------------------------------------------------------------------
+1. Traitement local et distant :
+   Les données saisies (candidats, règlements financiers, formateurs, cours) sont 
+   stockées localement sur le poste (base SQLite sécurisée) et synchronisées de 
+   manière chiffrée avec le cloud Neon PostgreSQL sous TLS 1.3.
+2. Responsabilité de traitement :
+   L'établissement utilisateur est seul responsable de traitement au sens des 
+   règlementations sur la protection de la vie privée (RGPD et lois nationales). 
+   L'établissement s'engage à obtenir le consentement légal de ses élèves et 
+   collaborateurs avant l'enregistrement de leurs informations personnelles.
+3. Sécurité des accès :
+   L'accès aux fonctionnalités sensibles (annulation de reçus, exportations de 
+   données, reprogrammation de cours expirés) est restreint par rôles nominatifs 
+   (Directeur, Secrétaire, Moniteur). L'utilisateur est seul responsable de la 
+   confidentialité de ses identifiants et de son code PIN Manager.
+
+--------------------------------------------------------------------------------
+ARTICLE 4. RÈGLES DE TENUE DE CAISSE ET INTÉGRITÉ FINANCIÈRE
+--------------------------------------------------------------------------------
+Le Logiciel fournit des outils de journalisation horodatée des encaissements et 
+sessions de caisse. L'utilisateur reconnaît que l'utilisation du Logiciel ne le 
+dispense pas de ses obligations légales, fiscales et comptables locales en matière 
+d'archivage et de vérification des écritures de trésorerie.
+
+--------------------------------------------------------------------------------
+ARTICLE 5. GARANTIE ET LIMITATION DE RESPONSABILITÉ
+--------------------------------------------------------------------------------
+1. Le Logiciel est fourni "EN L'ÉTAT", sans garantie d'aucune sorte, expresse ou 
+   implicite, quant à son adéquation à un usage particulier ou son fonctionnement 
+   ininterrompu.
+2. En aucun cas l'Éditeur ne pourra être tenu responsable des pertes de profits, 
+   pertes d'exploitation, interruptions d'activité, pertes ou altérations de 
+   données résultant d'une panne matérielle du poste hôte, d'un sinistre, ou d'une 
+   mauvaise manipulation par les opérateurs de l'auto-école.
+3. Il est vivement recommandé d'effectuer des sauvegardes régulières de la base 
+   locale et de maintenir une connexion Internet périodique pour la synchronisation.
+
+--------------------------------------------------------------------------------
+ARTICLE 6. DURÉE ET RÉSILIATION
+--------------------------------------------------------------------------------
+La présente licence demeure en vigueur tant que l'abonnement ou le droit d'accès 
+de l'auto-école est actif. En cas de non-respect de l'une quelconque des clauses 
+du présent contrat, la licence sera résiliée de plein droit sans préavis, entraînant 
+l'obligation de cesser toute utilisation et de désinstaller le Logiciel.
+
+--------------------------------------------------------------------------------
+ARTICLE 7. LOI APPLICABLE ET JURIDICTION
+--------------------------------------------------------------------------------
+Le présent contrat est régi par le droit en vigueur du pays d'immatriculation 
+de l'Éditeur. Tout litige relatif à l'interprétation ou à l'exécution de ce contrat 
+sera soumis à la juridiction exclusive des tribunaux compétents.
+================================================================================
+

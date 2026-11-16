@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr" class="h-full overflow-hidden bg-background text-foreground">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/app-icon.png" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#020617" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <title>ElevenDrive</title>
+    <!-- Google Fonts for modern crisp typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("autoschool_theme");
+          var prefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (saved === "dark" || (!saved && prefersDark)) {
+            document.documentElement.classList.add("dark");
+            document.documentElement.setAttribute("data-theme", "dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+            document.documentElement.removeAttribute("data-theme");
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      #app-boot-splash {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: #ffffff;
+        color: #0f172a;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          sans-serif;
+        z-index: 9999;
+      }
+      html.dark #app-boot-splash {
+        background: #090d16;
+        color: #f8fafc;
+      }
+      #app-boot-splash .boot-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 3px;
+        border: 1px solid #a7f3d0;
+        background: #ecfdf5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      html.dark #app-boot-splash .boot-box {
+        border-color: rgba(16, 185, 129, 0.35);
+        background: rgba(16, 185, 129, 0.12);
+      }
+      #app-boot-splash .boot-spin {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(16, 185, 129, 0.25);
+        border-top-color: #10b981;
+        border-radius: 9999px;
+        animation: boot-rotate 0.75s linear infinite;
+      }
+      @keyframes boot-rotate {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body class="h-full antialiased font-sans select-none overflow-hidden">
+    <div id="app" class="h-full overflow-hidden">
+      <div id="app-boot-splash" role="status" aria-live="polite">
+        <div class="boot-box"><div class="boot-spin"></div></div>
+        <div style="text-align: center">
+          <div style="font-size: 14px; font-weight: 600">ElevenDrive</div>
+          <div style="font-size: 11px; opacity: 0.65; margin-top: 2px">
+            Chargement de l'interface...
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

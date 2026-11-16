@@ -1,0 +1,30 @@
+[package]
+name = "elevendrive-desktop"
+version = "0.1.0"
+description = "Logiciel Hybride de Gestion d'Auto-École"
+authors = ["ElevenDrive Team"]
+edition = "2021"
+
+[lib]
+name = "elevendrive_desktop_lib"
+crate-type = ["rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.31", features = ["bundled"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.dev]
+incremental = false
