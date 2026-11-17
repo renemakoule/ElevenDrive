@@ -152,18 +152,28 @@ export async function runInitFromEnvironment(store: any): Promise<void> {
   // 3. Détection du code auto-école dans l'URL
   const explicitSchoolParam = urlParams.get("school") || urlParams.get("slug");
   let pathSegment: string | null = null;
-  if (window.location.pathname && window.location.pathname !== "/") {
+  if (
+    window.location.pathname &&
+    window.location.pathname !== "/" &&
+    window.location.pathname !== "/index.html"
+  ) {
     const seg = window.location.pathname
       .replace(/^\/+|\/+$/g, "")
       .split("/")[0];
     if (
       seg &&
-      !["api", "login", "register", "auth", "admin", "pwa"].includes(
+      !["api", "login", "register", "auth", "admin", "pwa", "index.html", "index"].includes(
         seg.toLowerCase(),
       )
     ) {
       pathSegment = seg;
     }
+  }
+
+  // Nettoyage visuel si le serveur statique a redirigé vers /index.html
+  if (window.location.pathname === "/index.html") {
+    const cleanOrigin = window.location.origin + (window.location.search || "");
+    window.history.replaceState({}, document.title, cleanOrigin);
   }
   store.hasExplicitSchoolInUrl = Boolean(explicitSchoolParam || pathSegment);
 
