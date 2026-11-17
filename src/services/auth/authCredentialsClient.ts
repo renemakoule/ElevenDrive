@@ -167,7 +167,9 @@ export async function loginWithCredentials(
     }
     if (networkFailed) {
       throw new Error(
-        `Mode hors-ligne : Connexion réseau indisponible et aucun compte local mémorisé pour "${identifiant}". Connectez-vous une première fois en ligne pour activer l'accès hors-ligne.`,
+        `Impossible de contacter le serveur Cloud (${API_BASE_URL}). ` +
+        `Pour une première connexion sur ce poste, l'application doit joindre le serveur pour synchroniser votre compte. ` +
+        `Vérifiez votre connexion Internet et assurez-vous que le serveur est en ligne.`,
       );
     }
   }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick } from "vue";
+import { ref, computed, nextTick, onMounted } from "vue";
 import { useAuthStore } from "../../stores/authStore";
 import { useGuichetStore } from "../../stores/guichetStore";
 import type { RegisterSchoolPayload, LoginCredentials } from "../../types";
@@ -11,7 +11,13 @@ import {
   ArrowLeft,
   Terminal,
   Sparkles,
+  Server,
+  Wifi,
+  WifiOff,
+  RotateCw,
+  Settings2,
 } from "lucide-vue-next";
+import { BACKEND_ORIGIN, API_BASE_URL } from "../../config/env";
 
 import AuthBrandingAside from "./AuthBrandingAside.vue";
 import AuthLoginForm from "./AuthLoginForm.vue";
@@ -59,6 +65,55 @@ const isDesktopTauri = computed(
     typeof window !== "undefined" &&
     ("__TAURI_INTERNALS__" in window || "__TAURI__" in window),
 );
+
+// --- Détection & Diagnostic Connectivité Serveur Cloud ---
+const serverStatus = ref<"checking" | "online" | "offline">("checking");
+const activeBackendOrigin = computed(() => BACKEND_ORIGIN || "https://elevendrive.onrender.com");
+const isConfigServerModalOpen = ref(false);
+const customUrlInput = ref(
+  (typeof localStorage !== "undefined" &&
+    localStorage.getItem("elevendrive_custom_api_url")) ||
+    "",
+);
+
+const checkServerConnection = async () => {
+  serverStatus.value = "checking";
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(`${API_BASE_URL}/sync/ping`, {
+      method: "GET",
+      signal: controller.signal,
+    }).catch(() => null);
+    clearTimeout(timeout);
+
+    if (res && res.ok) {
+      serverStatus.value = "online";
+    } else {
+      const resRoot = await fetch(`${BACKEND_ORIGIN}/api`, {
+        method: "GET",
+      }).catch(() => null);
+      serverStatus.value = resRoot && resRoot.ok ? "online" : "offline";
+    }
+  } catch {
+    serverStatus.value = "offline";
+  }
+};
+
+const saveCustomServerUrl = () => {
+  const trimmed = customUrlInput.value.trim();
+  if (trimmed) {
+    localStorage.setItem("elevendrive_custom_api_url", trimmed);
+  } else {
+    localStorage.removeItem("elevendrive_custom_api_url");
+  }
+  isConfigServerModalOpen.value = false;
+  window.location.reload();
+};
+
+onMounted(() => {
+  checkServerConnection();
+});
 
 const {
   isOAuthDesktopWaiting,
@@ -391,7 +446,45 @@ const finishRegistrationAndEnter = () => {
               </template>
             </p>
 
-            <div class="mt-6 pt-4 border-t border-border/40 text-center">
+            <div class="mt-6 pt-4 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+              <!-- Indicateur Connectivité Serveur Cloud -->
+              <div class="flex items-center gap-2">
+                <div
+                  class="flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border text-[11px] font-mono cursor-pointer transition hover:opacity-80"
+                  :class="[
+                    serverStatus === 'online'
+                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                      : serverStatus === 'offline'
+                        ? 'border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                        : 'border-border bg-muted text-muted-foreground',
+                  ]"
+                  @click="checkServerConnection"
+                  :title="'Cliquez pour retester la connexion à ' + activeBackendOrigin"
+                >
+                  <span
+                    class="h-1.5 w-1.5 rounded-full"
+                    :class="[
+                      serverStatus === 'online'
+                        ? 'bg-emerald-500 animate-pulse'
+                        : serverStatus === 'offline'
+                          ? 'bg-rose-500'
+                          : 'bg-amber-500 animate-ping',
+                    ]"
+                  ></span>
+                  <span>{{ serverStatus === 'online' ? 'Cloud En Ligne' : serverStatus === 'offline' ? 'Cloud Injoignable' : 'Vérification...' }}</span>
+                  <RotateCw class="w-3 h-3 ml-0.5 opacity-60 hover:opacity-100" />
+                </div>
+
+                <button
+                  type="button"
+                  @click="isConfigServerModalOpen = true"
+                  class="p-1 text-muted-foreground hover:text-foreground transition rounded"
+                  title="Configurer l'adresse du serveur API"
+                >
+                  <Settings2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
+
               <button
                 type="button"
                 @click="authStore.webPortalView = 'super_admin_login'"
@@ -426,5 +519,88 @@ const finishRegistrationAndEnter = () => {
       "
       @close="isQrModalOpen = false"
     />
+
+    <!-- Modal Configuration Manuelle URL Serveur API -->
+    <div
+      v-if="isConfigServerModalOpen"
+      class="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 animate-in fade-in duration-150 select-none"
+      @click.self="isConfigServerModalOpen = false"
+    >
+      <div
+        class="bg-card border border-border rounded-[4px] max-w-md w-full p-5 space-y-4 shadow-xl text-foreground"
+      >
+        <div class="flex items-center justify-between pb-3 border-b border-border">
+          <div class="flex items-center gap-2">
+            <Server class="w-4 h-4 text-brand" />
+            <h3 class="font-bold text-sm">Configuration Serveur Cloud</h3>
+          </div>
+          <button
+            type="button"
+            @click="isConfigServerModalOpen = false"
+            class="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition"
+          >
+            <X class="w-4 h-4" />
+          </button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <p class="text-muted-foreground leading-relaxed">
+            Par défaut, l'application se connecte au cluster Cloud Neon / Render hébergé.
+            Si vous disposez d'une instance dédiée ou d'un serveur local, vous pouvez spécifier son URL ici.
+          </p>
+
+          <div>
+            <label class="block font-medium mb-1 text-foreground">
+              URL Serveur API Backend
+            </label>
+            <input
+              v-model="customUrlInput"
+              type="url"
+              placeholder="https://elevendrive.onrender.com"
+              class="w-full h-9 px-3 rounded-[3px] border border-border bg-background text-xs font-mono focus:border-brand focus:outline-none"
+            />
+            <span class="text-[10px] text-muted-foreground mt-1 block">
+              Actuel : <span class="font-mono text-foreground">{{ activeBackendOrigin }}</span>
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between pt-2">
+            <button
+              type="button"
+              @click="checkServerConnection"
+              class="px-2.5 py-1.5 rounded-[3px] border border-border bg-muted hover:bg-muted/80 text-foreground text-[11px] font-semibold flex items-center gap-1.5 transition"
+            >
+              <RotateCw class="w-3 h-3" />
+              <span>Tester la connexion</span>
+            </button>
+
+            <span
+              v-if="serverStatus !== 'checking'"
+              class="text-[11px] font-mono font-bold"
+              :class="serverStatus === 'online' ? 'text-emerald-500' : 'text-rose-500'"
+            >
+              {{ serverStatus === 'online' ? '✓ Serveur Joignable' : '✗ Serveur Injoignable' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-border">
+          <button
+            type="button"
+            @click="isConfigServerModalOpen = false"
+            class="px-3 py-1.5 rounded-[3px] bg-muted hover:bg-muted/80 text-foreground text-xs font-medium transition"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            @click="saveCustomServerUrl"
+            class="px-3.5 py-1.5 rounded-[3px] bg-brand hover:bg-brand-dark text-white text-xs font-bold transition shadow-xs"
+          >
+            Enregistrer & Recharger
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
