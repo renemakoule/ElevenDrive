@@ -25,7 +25,10 @@ func CORS(allowedOrigins []string) func(http.Handler) http.Handler {
 					strings.Contains(origin, "tauri.localhost") ||
 					strings.HasPrefix(origin, "tauri://") ||
 					strings.Contains(origin, "ipc.localhost") ||
-					strings.HasSuffix(origin, ".onrender.com") {
+					strings.HasSuffix(origin, ".onrender.com") ||
+					strings.HasSuffix(origin, ".netlify.app") ||
+					strings.HasSuffix(origin, ".vercel.app") ||
+					strings.HasSuffix(origin, ".fly.dev") {
 					isTrustedOrigin = true
 				} else {
 					for _, allowed := range allowedOrigins {
