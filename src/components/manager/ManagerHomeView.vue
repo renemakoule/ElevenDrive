@@ -40,7 +40,7 @@ const alertesFlotte = computed(() => {
   const aujourdhui = new Date();
   aujourdhui.setHours(0, 0, 0, 0);
 
-  return guichetStore.vehicules.filter((v) => {
+  return (guichetStore.vehicules || []).filter((v) => {
     const jVisite = Math.ceil(
       (new Date(v.date_visite_technique).getTime() - aujourdhui.getTime()) /
         JOUR_MS,
@@ -105,7 +105,7 @@ const indicateurs = computed(() => [
     label: t("Candidats inscrits"),
     periode: t("Base active"),
     valeur: `${guichetStore.gerantDashboardData?.total_candidats_actifs ?? guichetStore.stats.total_candidats} ${t("élèves")}`,
-    progression: `${guichetStore.searchResults.length} ${t("chargés")}`,
+    progression: `${(guichetStore.searchResults || []).length} ${t("chargés")}`,
     icone: Users,
     ton: "sky",
   },

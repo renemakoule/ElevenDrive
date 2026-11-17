@@ -24,16 +24,6 @@ class RealtimeSocketService {
   public lastEventAt = ref<string>("");
 
   private getWsBaseUrl(): string {
-    const rawApi =
-      (import.meta.env?.VITE_API_URL as string) ||
-      "http://localhost:8080/api/auth";
-    const rootUrl = rawApi
-      .replace(/\/api\/auth\/?$/, "")
-      .replace(/\/api\/?$/, "");
-    const wsRoot = rootUrl
-      .replace(/^http:\/\//i, "ws://")
-      .replace(/^https:\/\//i, "wss://");
-    return `${wsRoot}/api/ws`;
     return getWsApiBaseUrl();
   }
 

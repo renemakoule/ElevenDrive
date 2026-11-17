@@ -28,8 +28,10 @@ function getErrorMessage(err: any): string {
 
 export async function execLoadFormules(store: any) {
   try {
-    store.formules = await api.getFormules();
+    const list = await api.getFormules();
+    store.formules = Array.isArray(list) ? list : [];
   } catch (err: any) {
+    if (!Array.isArray(store.formules)) store.formules = [];
     store.showToast(
       "Erreur chargement des formules: " + getErrorMessage(err),
       "error",

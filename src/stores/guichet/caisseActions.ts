@@ -110,7 +110,30 @@ export async function execUnlockConduiteWithPin(
 export async function execLoadGerantDashboard(store: any) {
   store.loading = true;
   try {
-    store.gerantDashboardData = await api.getImpayesEtAlertesGerant();
+    const data = await api.getImpayesEtAlertesGerant();
+    if (data && typeof data === "object") {
+      store.gerantDashboardData = {
+        ...data,
+        impayes: Array.isArray(data.impayes) ? data.impayes : [],
+        eleves_assidus_code: Array.isArray(data.eleves_assidus_code)
+          ? data.eleves_assidus_code
+          : [],
+        inscriptions_formules: Array.isArray(data.inscriptions_formules)
+          ? data.inscriptions_formules
+          : [],
+        evolution_recettes: Array.isArray(data.evolution_recettes)
+          ? data.evolution_recettes
+          : [],
+        ventilation_modes: Array.isArray(data.ventilation_modes)
+          ? data.ventilation_modes
+          : [],
+        paiements_recents: Array.isArray(data.paiements_recents)
+          ? data.paiements_recents
+          : [],
+      };
+    } else {
+      store.gerantDashboardData = data;
+    }
   } catch (err: any) {
     store.showToast(
       "Erreur chargement tableau de bord gérant: " + err.message,

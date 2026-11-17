@@ -159,10 +159,10 @@ const renderFormulesChart = () => {
   let labels: string[] = [];
   let dataCounts: number[] = [];
 
-  if (stats.length > 0) {
+  if (stats && stats.length > 0) {
     labels = stats.map((f) => f.intitule);
     dataCounts = stats.map((f) => f.inscrits);
-  } else if (guichetStore.formules.length > 0) {
+  } else if (guichetStore.formules && guichetStore.formules.length > 0) {
     labels = guichetStore.formules.map((f) => f.intitule);
     dataCounts = labels.map(() => 0);
   } else {
