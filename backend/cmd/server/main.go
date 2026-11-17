@@ -90,7 +90,24 @@ func main() {
 	mux.HandleFunc("/api/ws", wsHub.ServeWS)
 	mux.HandleFunc("/ws", wsHub.ServeWS)
 
-	// Route de santé
+	// Route de santé et routes d'accueil
+	rootHandler := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" && r.URL.Path != "/api" && r.URL.Path != "/api/" {
+			http.NotFound(w, r)
+			return
+		}
+		handler.Success(w, http.StatusOK, map[string]interface{}{
+			"service":   "AutoSchool ElevenDrive API",
+			"status":    "ONLINE",
+			"version":   "1.1.0",
+			"database":  "CONNECTED",
+			"timestamp": time.Now().UTC().Format(time.RFC3339),
+		})
+	}
+	mux.HandleFunc("/", rootHandler)
+	mux.HandleFunc("/api", rootHandler)
+	mux.HandleFunc("/api/", rootHandler)
+
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		handler.Success(w, http.StatusOK, map[string]interface{}{
 			"status":    "UP",
