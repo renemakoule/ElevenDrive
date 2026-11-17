@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import appLogo from "@root/app-icon.png";
-import { ArrowUpRight, ShieldCheck, Heart } from "lucide-vue-next";
+import { ArrowUpRight, ShieldCheck, Heart, Download } from "lucide-vue-next";
 import { useLanguageStore } from "../../stores/languageStore";
+import DownloadModal from "./DownloadModal.vue";
 
 const emit = defineEmits<{
   (e: "navigate-auth"): void;
@@ -13,6 +14,7 @@ const languageStore = useLanguageStore();
 const t = (text: string) => languageStore.t(text);
 
 const currentYear = new Date().getFullYear();
+const isDownloadModalOpen = ref(false);
 
 const footerLinks = computed(() => ({
   solutions: [
@@ -84,6 +86,18 @@ const handleScroll = (id: string) => {
             />
             <span>{{ t("Tous les systèmes sont opérationnels") }}</span>
           </div>
+
+          <!-- Bouton Télécharger ElevenDrive Desktop -->
+          <div class="mt-3.5">
+            <button
+              type="button"
+              class="inline-flex items-center gap-1.5 h-7.5 px-3 rounded-[4px] font-medium text-xs bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-xs"
+              @click="isDownloadModalOpen = true"
+            >
+              <Download class="h-3.5 w-3.5" />
+              <span>{{ t("Télécharger le logiciel") }}</span>
+            </button>
+          </div>
         </div>
 
         <!-- Colonne Solutions -->
@@ -115,7 +129,19 @@ const handleScroll = (id: string) => {
           </p>
           <ul class="mt-3 space-y-2">
             <li v-for="item in footerLinks.plateformes" :key="item.label">
+              <button
+                v-if="item.label.includes('Desktop') || item.label.includes('Application')"
+                type="button"
+                class="text-[12px] text-muted-foreground hover:text-foreground cursor-pointer transition text-left flex items-center gap-1.5"
+                @click="isDownloadModalOpen = true"
+              >
+                <span>{{ item.label }}</span>
+                <span class="px-1.5 py-0.2 rounded-[3px] text-[9px] font-mono bg-brand/15 text-brand border border-brand/30">
+                  .exe
+                </span>
+              </button>
               <span
+                v-else
                 class="text-[12px] text-muted-foreground hover:text-foreground cursor-pointer transition"
               >
                 {{ item.label }}
@@ -164,5 +190,11 @@ const handleScroll = (id: string) => {
         </div>
       </div>
     </div>
+
+    <!-- Panneau de téléchargement des versions Desktop -->
+    <DownloadModal
+      :is-open="isDownloadModalOpen"
+      @close="isDownloadModalOpen = false"
+    />
   </footer>
 </template>

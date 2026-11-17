@@ -38,6 +38,7 @@ import ThermalReceiptModal from "./components/guichet/ThermalReceiptModal.vue";
 import ThermalRapportZModal from "./components/guichet/ThermalRapportZModal.vue";
 import ManagerOverrideModal from "./components/guichet/ManagerOverrideModal.vue";
 import DesktopAuthPortal from "./components/auth/DesktopAuthPortal.vue";
+import DesktopOnboardingTour from "./components/onboarding/DesktopOnboardingTour.vue";
 import WebPwaPortal from "./components/pwa/WebPwaPortal.vue";
 import LandingView from "./components/landing/LandingView.vue";
 import SuperAdminDashboardView from "./components/superadmin/SuperAdminDashboardView.vue";
@@ -129,6 +130,25 @@ const handleGlobalKeyDown = (e: KeyboardEvent) => {
   }
 };
 
+// Détection du premier lancement Desktop pour la visite guidée
+const isDesktopTourCompleted = ref(true);
+
+const checkDesktopTourState = () => {
+  try {
+    const onboarded = localStorage.getItem("elevendrive_desktop_onboarded_v1");
+    isDesktopTourCompleted.value = onboarded === "true";
+  } catch {
+    isDesktopTourCompleted.value = true;
+  }
+};
+
+const handleTourComplete = () => {
+  isDesktopTourCompleted.value = true;
+  try {
+    localStorage.setItem("elevendrive_desktop_onboarded_v1", "true");
+  } catch {}
+};
+
 // Détection stricte de l'environnement natif Tauri (absent sur navigateur Web)
 const isDesktopTauri = computed(() => {
   return (
@@ -182,6 +202,7 @@ const handleVisibilitySync = () => {
 onMounted(async () => {
   try {
     languageStore.init();
+    checkDesktopTourState();
     await authStore.initFromEnvironment();
     if (authStore.isAuthenticated) {
       await guichetStore.init();
@@ -362,8 +383,18 @@ onUnmounted(() => {
 
       <!-- 5. Si Non Authentifié : Portails de connexion Auto-École ou Visiteur -->
       <template v-if="!authStore.isAuthenticated">
+        <!-- Visite Guidée Première Installation (Desktop Tauri) -->
+        <DesktopOnboardingTour
+          v-if="isDesktopTauri && !isDesktopTourCompleted"
+          @complete="handleTourComplete"
+          @skip="handleTourComplete"
+        />
+
         <!-- Mode Desktop Tauri natif : Portail d'authentification Desktop -->
-        <DesktopAuthPortal v-if="authStore.platform === 'desktop'" />
+        <DesktopAuthPortal
+          v-else-if="authStore.platform === 'desktop'"
+          @reopen-tour="isDesktopTourCompleted = false"
+        />
 
         <!-- Mode Web avec auto-école spécifiée (QR Code / lien direct auto-école) -->
         <WebPwaPortal v-else-if="authStore.hasExplicitSchoolInUrl" />

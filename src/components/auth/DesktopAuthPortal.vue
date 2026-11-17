@@ -10,6 +10,7 @@ import {
   X,
   ArrowLeft,
   Terminal,
+  Sparkles,
 } from "lucide-vue-next";
 
 import AuthBrandingAside from "./AuthBrandingAside.vue";
@@ -27,6 +28,7 @@ import {
 
 const emit = defineEmits<{
   (e: "close"): void;
+  (e: "reopen-tour"): void;
 }>();
 
 const authStore = useAuthStore();
@@ -231,6 +233,17 @@ const finishRegistrationAndEnter = () => {
       >
         <ArrowLeft class="h-3.5 w-3.5" />
         <span>Accueil</span>
+      </button>
+
+      <button
+        v-else
+        type="button"
+        class="absolute right-5 top-5 z-20 flex items-center gap-1.5 rounded-full border border-border bg-card/80 px-3 py-1.5 text-[11px] font-medium text-muted-foreground shadow-xs backdrop-blur-sm transition hover:bg-muted hover:text-foreground hover:border-emerald-500/40"
+        title="Revoir la visite guidée d'accueil"
+        @click="emit('reopen-tour')"
+      >
+        <Sparkles class="h-3.5 w-3.5 text-emerald-500" />
+        <span>Visite guidée</span>
       </button>
 
       <DesktopOAuthWaitingOverlay
