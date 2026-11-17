@@ -5,6 +5,7 @@ import { useGuichetStore } from "../../stores/guichetStore";
 import {
   X,
   Check,
+  CheckCircle2,
   Sparkles,
   ArrowRight,
   ShieldCheck,
@@ -13,6 +14,8 @@ import {
   Building2,
   Phone,
   MessageSquare,
+  Clock,
+  AlertTriangle,
 } from "lucide-vue-next";
 
 defineProps<{
@@ -27,18 +30,71 @@ const authStore = useAuthStore();
 const guichetStore = useGuichetStore();
 
 const isAnnual = ref(true);
-const isContactModalOpen = ref(false);
 const selectedPlanId = ref<"eleven" | "customeleven">("eleven");
+
+// --- Analyse de la licence de l'auto-école courante ---
+const school = computed(() => authStore.currentSchool);
+const isLicenceExpired = computed(() => authStore.isLicenceExpired);
+const daysRemaining = computed(() => authStore.trialDaysRemaining);
+
+const rawTypeLicence = computed(() =>
+  (school.value?.type_licence || "TRIAL").toUpperCase(),
+);
+
+const isTrial = computed(() => {
+  const t = rawTypeLicence.value;
+  return t.includes("TRIAL") || t.includes("ESSAI") || t.includes("GRATUIT");
+});
+
+const isCustomSchool = computed(() => {
+  const t = rawTypeLicence.value;
+  return t.includes("CUSTOM") || t.includes("SUR-MESURE");
+});
+
+// Le plan est considéré comme actif et en cours si la licence n'est pas expirée
+// et qu'il reste au moins 1 jour de validité (essai 30j ou abonnement souscrit)
+const isElevenProPlanActive = computed(() => {
+  if (!school.value) return false;
+  return !isCustomSchool.value && !isLicenceExpired.value && daysRemaining.value > 0;
+});
+
+const isCustomPlanActive = computed(() => {
+  if (!school.value) return false;
+  return isCustomSchool.value && !isLicenceExpired.value && daysRemaining.value > 0;
+});
+
+const expirationDateFormatted = computed(() => {
+  const raw = school.value?.date_expiration_licence;
+  if (!raw) return "";
+  try {
+    return new Date(raw).toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+});
+
+const daysRemainingLabel = computed(() => {
+  const d = daysRemaining.value;
+  if (d <= 0) return "Expiré";
+  if (d === 1) return "1 jour restant";
+  return `${d} jours restants`;
+});
 
 const plans = computed(() => [
   {
-    id: "eleven",
+    id: "eleven" as const,
     name: "Eleven Pro",
     badge: "Recommandé · Bon Plan",
     desc: "La solution tout-en-un pour gérer votre auto-école, vos agences et moniteurs sans limitation.",
     priceMonthly: 12000,
     priceAnnual: 10200, // -15% en annuel
     popular: true,
+    isActive: isElevenProPlanActive.value,
+    isCurrentPlan: !isCustomSchool.value && Boolean(school.value),
     features: [
       "Jusqu'à 3 agences physiques incluses",
       "Candidats et dossiers illimités",
@@ -51,13 +107,15 @@ const plans = computed(() => [
     ],
   },
   {
-    id: "customeleven",
+    id: "customeleven" as const,
     name: "Custom Eleven",
     badge: "Sur-Mesure",
     desc: "Déploiement personnalisé pour réseaux d'auto-écoles et flottes multi-régionales.",
     priceMonthly: null,
     priceAnnual: null,
     popular: false,
+    isActive: isCustomPlanActive.value,
+    isCurrentPlan: isCustomSchool.value && Boolean(school.value),
     features: [
       "Agences et succursales illimitées",
       "Intégration bancaire directe & terminaux sur site",
@@ -73,9 +131,18 @@ const formatPrice = (amount: number | null) => {
   return new Intl.NumberFormat("fr-FR").format(amount) + " FCFA";
 };
 
-const handleSelectPlan = (planId: "eleven" | "customeleven") => {
+const handleSelectPlan = (planId: "eleven" | "customeleven", isActive: boolean) => {
+  // Si le plan est encore actif, le clic est désactivé
+  if (isActive) return;
+
   selectedPlanId.value = planId;
-  isContactModalOpen.value = true;
+  const schoolName = authStore.schoolName || "Mon Auto-École";
+  const planName = planId === "eleven" ? "Eleven Pro" : "Custom Eleven";
+  const billingType = isAnnual.value ? "Annuelle (-15%)" : "Mensuelle";
+  const msg = encodeURIComponent(
+    `Bonjour ElevenDrive,\nJe souhaite souscrire / renouveler l'abonnement pour mon auto-école "${schoolName}".\nFormule : ${planName} (Facturation ${billingType}).`,
+  );
+  window.open(`https://wa.me/237651727932?text=${msg}`, "_blank");
 };
 </script>
 
@@ -104,6 +171,21 @@ const handleSelectPlan = (planId: "eleven" | "customeleven") => {
             >
               <span>Bons Plans & Abonnements ElevenDrive</span>
               <span
+                v-if="!isLicenceExpired && school"
+                class="text-[9px] uppercase font-mono px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/30 flex items-center gap-1"
+              >
+                <CheckCircle2 class="w-2.5 h-2.5" />
+                <span>{{ isTrial ? 'Essai 30j Actif' : 'Abonnement Actif' }}</span>
+              </span>
+              <span
+                v-else-if="isLicenceExpired && school"
+                class="text-[9px] uppercase font-mono px-1.5 py-0.2 rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 font-semibold border border-rose-500/30 flex items-center gap-1"
+              >
+                <AlertTriangle class="w-2.5 h-2.5" />
+                <span>Abonnement Expiré</span>
+              </span>
+              <span
+                v-else
                 class="text-[9px] uppercase font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 font-semibold border border-amber-500/30"
               >
                 Passez au plan supérieur
@@ -126,7 +208,47 @@ const handleSelectPlan = (planId: "eleven" | "customeleven") => {
       </div>
 
       <!-- Corps -->
-      <div class="p-5 overflow-y-auto space-y-6 flex-1 text-xs">
+      <div class="p-5 overflow-y-auto space-y-5 flex-1 text-xs">
+        <!-- Bandeau d'information spécifique au statut de licence de l'auto-école -->
+        <div
+          v-if="school && (isElevenProPlanActive || isCustomPlanActive)"
+          class="rounded-[4px] border border-emerald-500/30 bg-emerald-500/10 dark:bg-emerald-500/10 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+        >
+          <div class="flex items-center gap-2">
+            <ShieldCheck class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div>
+              <span class="font-bold text-foreground">
+                {{ isTrial ? 'Période d\'essai gratuite (30 jours) en cours' : 'Votre abonnement est actuellement actif' }} :
+              </span>
+              <span class="text-muted-foreground ml-1">
+                Formule {{ rawTypeLicence }} sur votre auto-école {{ authStore.schoolName }}.
+              </span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+            <Clock class="w-3.5 h-3.5" />
+            <span>{{ daysRemainingLabel }}</span>
+            <span v-if="expirationDateFormatted" class="font-normal text-muted-foreground text-[10px]">
+              (Jusqu'au {{ expirationDateFormatted }})
+            </span>
+          </div>
+        </div>
+
+        <div
+          v-else-if="school && isLicenceExpired"
+          class="rounded-[4px] border border-rose-500/30 bg-rose-500/10 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+        >
+          <div class="flex items-center gap-2 text-rose-700 dark:text-rose-400">
+            <AlertTriangle class="w-4 h-4 shrink-0" />
+            <div>
+              <span class="font-bold">Votre période d'abonnement / essai gratuit est arrivée à échéance.</span>
+              <div class="text-[11px] opacity-90 mt-0.5">
+                Le blocage a été levé sur les formules : vous pouvez souscrire ou renouveler immédiatement ci-dessous.
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Basculeur Mensuel / Annuel -->
         <div class="flex items-center justify-center">
           <div
@@ -150,7 +272,7 @@ const handleSelectPlan = (planId: "eleven" | "customeleven") => {
               class="px-3.5 py-1.5 rounded-[3px] transition flex items-center gap-1.5 cursor-pointer"
               :class="
                 isAnnual
-                  ? 'bg-brand text-white  font-bold'
+                  ? 'bg-brand text-white font-bold'
                   : 'text-muted-foreground hover:text-foreground'
               "
             >
@@ -171,14 +293,35 @@ const handleSelectPlan = (planId: "eleven" | "customeleven") => {
             :key="plan.id"
             class="relative rounded-[6px] border p-5 flex flex-col justify-between transition-all duration-200"
             :class="[
-              plan.popular
-                ? 'border-brand bg-gradient-to-b from-brand/5 via-card to-card ring-1 ring-brand/50 shadow-2xl'
-                : 'border-border bg-card hover:border-border/80',
+              plan.isActive
+                ? 'border-border/80 bg-muted/20 opacity-85 shadow-none'
+                : plan.popular
+                  ? 'border-brand bg-gradient-to-b from-brand/5 via-card to-card ring-1 ring-brand/50 shadow-2xl'
+                  : 'border-border bg-card hover:border-border/80',
             ]"
           >
-            <!-- Badge populaire -->
+            <!-- Badge supérieur (Recommandé / Bon Plan ou Abonnement en cours) -->
+            <!-- 1. CAS OÙ LE PLAN EST ACTIF : Marqué grisé / actif avec la période restante -->
             <div
-              v-if="plan.popular"
+              v-if="plan.isActive"
+              class="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded-full bg-muted border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-extrabold uppercase tracking-wider shadow-xs flex items-center gap-1"
+            >
+              <CheckCircle2 class="w-3 h-3 text-emerald-500" />
+              <span>Abonnement Actif · {{ daysRemainingLabel }}</span>
+            </div>
+
+            <!-- 2. CAS OÙ LE PLAN EST EXPIRÉ : Alerte de renouvellement -->
+            <div
+              v-else-if="plan.isCurrentPlan && isLicenceExpired"
+              class="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded-full bg-rose-600 text-white text-[9px] font-extrabold uppercase tracking-wider shadow-sm flex items-center gap-1 animate-pulse"
+            >
+              <AlertTriangle class="w-2.5 h-2.5" />
+              <span>Expiré · À renouveler</span>
+            </div>
+
+            <!-- 3. CAS STANDARD : Badge Bon Plan classique -->
+            <div
+              v-else-if="plan.popular"
               class="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded-full bg-brand text-white text-[9px] font-extrabold uppercase tracking-wider shadow-sm flex items-center gap-1"
             >
               <Sparkles class="w-2.5 h-2.5" />
@@ -187,14 +330,36 @@ const handleSelectPlan = (planId: "eleven" | "customeleven") => {
 
             <div class="space-y-4">
               <div>
-                <h3 class="text-base font-extrabold text-foreground">
-                  {{ plan.name }}
-                </h3>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-base font-extrabold text-foreground">
+                    {{ plan.name }}
+                  </h3>
+                  <span
+                    v-if="plan.isActive"
+                    class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30"
+                  >
+                    PLAN EN COURS
+                  </span>
+                </div>
                 <p
                   class="text-[11px] text-muted-foreground mt-1 leading-relaxed"
                 >
                   {{ plan.desc }}
                 </p>
+              </div>
+
+              <!-- Période restante mise en valeur si le plan est en cours d'utilisation -->
+              <div
+                v-if="plan.isActive"
+                class="p-2.5 rounded-[4px] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-xs"
+              >
+                <div class="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-semibold">
+                  <Clock class="w-3.5 h-3.5" />
+                  <span>Temps restant :</span>
+                </div>
+                <div class="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                  {{ daysRemainingLabel }}
+                </div>
               </div>
 
               <!-- Tarification -->
@@ -244,9 +409,33 @@ const handleSelectPlan = (planId: "eleven" | "customeleven") => {
 
             <!-- Bouton d'action -->
             <div class="pt-5 mt-4 border-t border-border/40">
+              <!-- Si le plan est actif : bouton grisé et désactivé avec jours restants -->
               <button
+                v-if="plan.isActive"
                 type="button"
-                @click="handleSelectPlan(plan.id as any)"
+                disabled
+                class="w-full py-2.5 rounded-[4px] font-bold text-xs transition flex items-center justify-center gap-1.5 bg-muted/60 text-muted-foreground border border-border cursor-not-allowed opacity-75 select-none"
+              >
+                <CheckCircle2 class="w-3.5 h-3.5 text-emerald-500" />
+                <span>Abonnement en cours ({{ daysRemainingLabel }})</span>
+              </button>
+
+              <!-- Si le plan a expiré : bouton réactivé pour renouvellement immédiat -->
+              <button
+                v-else-if="plan.isCurrentPlan && isLicenceExpired"
+                type="button"
+                @click="handleSelectPlan(plan.id, false)"
+                class="w-full py-2.5 rounded-[4px] font-extrabold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-1.5 bg-brand hover:bg-brand-dark text-white ring-2 ring-brand/30"
+              >
+                <span>Renouveler ce Bon Plan</span>
+                <ArrowRight class="w-3.5 h-3.5" />
+              </button>
+
+              <!-- Cas standard pour souscription -->
+              <button
+                v-else
+                type="button"
+                @click="handleSelectPlan(plan.id, false)"
                 class="w-full py-2.5 rounded-[4px] font-extrabold text-xs shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5"
                 :class="
                   plan.popular
@@ -294,9 +483,17 @@ const handleSelectPlan = (planId: "eleven" | "customeleven") => {
       <div
         class="p-3 bg-muted/40 border-t border-border flex items-center justify-between text-xs"
       >
-        <span class="text-[11px] text-muted-foreground">
-          Auto-École : <strong>{{ authStore.schoolName }}</strong>
-        </span>
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] text-muted-foreground">
+            Auto-École : <strong>{{ authStore.schoolName }}</strong>
+          </span>
+          <span
+            v-if="school"
+            class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border"
+          >
+            {{ rawTypeLicence }} · {{ daysRemainingLabel }}
+          </span>
+        </div>
         <button
           type="button"
           @click="emit('close')"
