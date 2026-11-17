@@ -16,9 +16,21 @@ function isTauriWebviewOrigin(origin: string): boolean {
 
 /**
  * Résout l'origine du serveur Go (ex: https://api.mondomaine.com).
- * Utilise VITE_API_URL en priorité ; n'utilise localhost qu'en mode développement.
+ * Utilise VITE_API_URL en priorité ; supporte une URL personnalisée en local ; n'utilise localhost qu'en mode dev.
  */
 export function resolveBackendOrigin(): string {
+  // 1. Possibilité de surcharger l'URL du serveur en local (ex: bascule de staging vers production finale)
+  if (typeof localStorage !== "undefined") {
+    const customUrl = localStorage.getItem("elevendrive_custom_api_url");
+    if (customUrl) {
+      try {
+        const parsed = new URL(customUrl);
+        return `${parsed.protocol}//${parsed.host}`;
+      } catch {}
+    }
+  }
+
+  // 2. Variable d'environnement injectée au build (VITE_API_URL)
   if (rawApiUrl) {
     try {
       const parsed = new URL(rawApiUrl);
@@ -40,12 +52,8 @@ export function resolveBackendOrigin(): string {
     return window.location.origin;
   }
 
-  if (typeof console !== "undefined") {
-    console.error(
-      "[ElevenDrive] Variable VITE_API_URL manquante dans votre fichier .env / .env.production.",
-    );
-  }
-  return "";
+  // 3. Serveur de test / staging temporaire par défaut
+  return "https://elevendrive.onrender.com";
 }
 
 export const BACKEND_ORIGIN = resolveBackendOrigin();
