@@ -92,7 +92,8 @@ func main() {
 
 	// Route de santé et routes d'accueil
 	rootHandler := func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" && r.URL.Path != "/api" && r.URL.Path != "/api/" {
+		cleanPath := strings.TrimRight(r.URL.Path, "/")
+		if cleanPath != "" && cleanPath != "/api" && cleanPath != "/api/auth" {
 			http.NotFound(w, r)
 			return
 		}
@@ -107,6 +108,8 @@ func main() {
 	mux.HandleFunc("/", rootHandler)
 	mux.HandleFunc("/api", rootHandler)
 	mux.HandleFunc("/api/", rootHandler)
+	mux.HandleFunc("/api/auth", rootHandler)
+	mux.HandleFunc("/api/auth/", rootHandler)
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		handler.Success(w, http.StatusOK, map[string]interface{}{

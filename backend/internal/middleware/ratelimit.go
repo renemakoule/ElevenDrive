@@ -107,9 +107,13 @@ func RateLimit(next http.Handler) http.Handler {
 		ip := extractClientIP(r)
 		path := r.URL.Path
 
-		isStrict := strings.HasPrefix(path, "/api/auth/") ||
+		isStrict := (strings.HasPrefix(path, "/api/auth/login") ||
+			strings.HasPrefix(path, "/api/auth/register-school") ||
+			strings.HasPrefix(path, "/api/auth/verify-pin") ||
 			strings.HasPrefix(path, "/api/traduire") ||
-			path == "/api/superadmin/login"
+			path == "/api/super-admin/login" ||
+			path == "/api/login" ||
+			path == "/api/register-school")
 
 		allowed := true
 		if isStrict {
