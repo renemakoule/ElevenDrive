@@ -11,6 +11,8 @@ import {
   Moon,
   Monitor,
   Sliders,
+  Palette,
+  Sparkles,
   ChevronRight,
   Check,
   HelpCircle,
@@ -24,6 +26,11 @@ import {
   Terminal,
   Megaphone,
 } from "lucide-vue-next";
+import {
+  CUSTOM_COLOR_THEMES,
+  CUSTOM_BACKGROUND_STYLES,
+  type BackgroundStyleId,
+} from "../../config/themes";
 import NetworkNotificationsModal from "./NetworkNotificationsModal.vue";
 
 const authStore = useAuthStore();
@@ -32,15 +39,18 @@ const languageStore = useLanguageStore();
 
 // État des menus ouverts
 const activeMenu = ref<"affichage" | "aide" | "langue" | null>(null);
-const activeSubmenu = ref<"theme" | null>(null);
+const activeSubmenu = ref<"theme" | "personnaliser" | null>(null);
+const activePersonnaliserSub = ref<"color-theme" | "background" | null>(null);
 
 // Modales annexes
 const isAboutModalOpen = ref(false);
 const isShortcutsModalOpen = ref(false);
 const isNetworkAdsModalOpen = ref(false);
 
-// Thème actuel
+// Thème actuel, Thème de couleur & Background
 const currentTheme = ref<"light" | "dark" | "system">("system");
+const currentColorTheme = ref<string>("default");
+const currentBgStyle = ref<BackgroundStyleId>("default");
 
 const isTauri =
   typeof window !== "undefined" &&
@@ -52,9 +62,11 @@ const toggleMenu = (menu: "affichage" | "aide" | "langue") => {
   if (activeMenu.value === menu) {
     activeMenu.value = null;
     activeSubmenu.value = null;
+    activePersonnaliserSub.value = null;
   } else {
     activeMenu.value = menu;
     activeSubmenu.value = null;
+    activePersonnaliserSub.value = null;
   }
 };
 
@@ -65,16 +77,21 @@ const handleMenuHover = (menu: "affichage" | "aide" | "langue") => {
   if (activeMenu.value !== null && activeMenu.value !== menu) {
     activeMenu.value = menu;
     activeSubmenu.value = null;
+    activePersonnaliserSub.value = null;
   }
 };
 
-const handleSubmenuHover = (sub: "theme") => {
+const handleSubmenuHover = (sub: "theme" | "personnaliser") => {
   activeSubmenu.value = sub;
+  if (sub !== "personnaliser") {
+    activePersonnaliserSub.value = null;
+  }
 };
 
 const closeAllMenus = () => {
   activeMenu.value = null;
   activeSubmenu.value = null;
+  activePersonnaliserSub.value = null;
 };
 
 /**
@@ -100,6 +117,38 @@ const setTheme = (mode: "light" | "dark" | "system") => {
     `Thème d'affichage : ${mode === "dark" ? "Sombre" : mode === "light" ? "Clair" : "Automatique (Système)"}`,
     "info",
   );
+};
+
+const activeColorThemeMeta = computed(
+  () =>
+    CUSTOM_COLOR_THEMES.find((t) => t.id === currentColorTheme.value) ||
+    CUSTOM_COLOR_THEMES[0],
+);
+
+const setColorTheme = (themeId: string, label: string) => {
+  currentColorTheme.value = themeId;
+  if (themeId === "default") {
+    document.documentElement.removeAttribute("data-color-theme");
+    localStorage.removeItem("autoschool_color_theme");
+  } else {
+    document.documentElement.setAttribute("data-color-theme", themeId);
+    localStorage.setItem("autoschool_color_theme", themeId);
+  }
+  closeAllMenus();
+  guichetStore.showToast(`Thème de couleur : ${label}`, "info");
+};
+
+const setBackgroundStyle = (bgId: BackgroundStyleId, label: string) => {
+  currentBgStyle.value = bgId;
+  if (bgId === "default") {
+    document.documentElement.removeAttribute("data-bg-style");
+    localStorage.removeItem("autoschool_bg_style");
+  } else {
+    document.documentElement.setAttribute("data-bg-style", bgId);
+    localStorage.setItem("autoschool_bg_style", bgId);
+  }
+  closeAllMenus();
+  guichetStore.showToast(`Background : ${label}`, "info");
 };
 
 /**
@@ -142,6 +191,16 @@ onMounted(async () => {
     currentTheme.value = savedTheme;
   } else {
     currentTheme.value = "system";
+  }
+
+  const savedColorTheme = localStorage.getItem("autoschool_color_theme");
+  if (savedColorTheme) {
+    currentColorTheme.value = savedColorTheme;
+  }
+
+  const savedBgStyle = localStorage.getItem("autoschool_bg_style") as BackgroundStyleId | null;
+  if (savedBgStyle) {
+    currentBgStyle.value = savedBgStyle;
   }
 
   languageStore.init();
@@ -396,20 +455,156 @@ const closeWindow = async () => {
               </div>
             </div>
 
-            <!-- Option Personnalisation -->
-            <button
-              type="button"
-              @click="toggleSidebar"
-              class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[3px] hover:bg-muted transition text-left text-foreground"
+            <!-- Sous-menu Personnaliser -->
+            <div
+              class="relative flex items-center justify-between px-2.5 py-1.5 rounded-[3px] hover:bg-muted cursor-pointer transition text-foreground"
+              @mouseenter="handleSubmenuHover('personnaliser')"
+              @click.stop="
+                activeSubmenu =
+                  activeSubmenu === 'personnaliser' ? null : 'personnaliser'
+              "
             >
               <div class="flex text-xs items-center gap-2">
                 <Sliders class="h-3.5 w-3.5 text-muted-foreground" />
-                <span>{{ languageStore.t("Personnalisation") }}</span>
+                <span>{{ languageStore.t("Personnaliser") }}</span>
               </div>
-              <span class="text-[10px] text-muted-foreground font-mono"
-                >Sidebar</span
+              <ChevronRight class="h-3.5 w-3.5 text-muted-foreground" />
+
+              <!-- Sous-menu Personnaliser (Thème de couleur & Background) -->
+              <div
+                v-if="activeSubmenu === 'personnaliser'"
+                class="absolute left-full top-0 ml-1 w-48 rounded-[3px] border border-border bg-background p-1 text-xs z-50 animate-in fade-in slide-in-from-left-1 duration-100 shadow-xl"
               >
-            </button>
+                <!-- Option 1 : Thème de couleur -->
+                <div
+                  class="relative flex items-center justify-between px-2.5 py-1.5 rounded-[3px] hover:bg-muted cursor-pointer transition text-foreground"
+                  @mouseenter="activePersonnaliserSub = 'color-theme'"
+                  @click.stop="
+                    activePersonnaliserSub =
+                      activePersonnaliserSub === 'color-theme'
+                        ? null
+                        : 'color-theme'
+                  "
+                >
+                  <div class="flex text-xs items-center gap-2 min-w-0">
+                    <Palette class="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span class="truncate">{{
+                      languageStore.t("Thème de couleur")
+                    }}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <span
+                      class="h-2.5 w-2.5 rounded-full border border-border"
+                      :style="{ backgroundColor: activeColorThemeMeta.primary }"
+                    ></span>
+                    <ChevronRight class="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+
+                  <!-- Liste des thèmes de couleurs personnalisés -->
+                  <div
+                    v-if="activePersonnaliserSub === 'color-theme'"
+                    class="absolute left-full top-0 ml-1 w-56 max-h-80 overflow-y-auto rounded-[3px] border border-border bg-background p-1 text-xs z-50 animate-in fade-in slide-in-from-left-1 duration-100 shadow-xl"
+                  >
+                    <button
+                      v-for="theme in CUSTOM_COLOR_THEMES"
+                      :key="theme.id"
+                      type="button"
+                      @click.stop="setColorTheme(theme.id, theme.label)"
+                      class="w-full text-xs flex items-center justify-between gap-2 px-2 py-1.5 rounded-[3px] hover:bg-muted transition text-left"
+                      :class="{
+                        'font-semibold text-primary bg-muted/60':
+                          currentColorTheme === theme.id,
+                      }"
+                    >
+                      <div class="flex items-center gap-2 min-w-0">
+                        <div class="flex items-center -space-x-1 shrink-0">
+                          <span
+                            class="h-3 w-3 rounded-full border border-background"
+                            :style="{ backgroundColor: theme.primary }"
+                          ></span>
+                          <span
+                            class="h-3 w-3 rounded-full border border-background"
+                            :style="{ backgroundColor: theme.secondary }"
+                          ></span>
+                          <span
+                            class="h-3 w-3 rounded-full border border-background"
+                            :style="{ backgroundColor: theme.accent }"
+                          ></span>
+                        </div>
+                        <span class="truncate">{{ theme.label }}</span>
+                      </div>
+                      <Check
+                        v-if="currentColorTheme === theme.id"
+                        class="h-3.5 w-3.5 text-primary shrink-0"
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Option 2 : Background -->
+                <div
+                  class="relative flex items-center justify-between px-2.5 py-1.5 rounded-[3px] hover:bg-muted cursor-pointer transition text-foreground"
+                  @mouseenter="activePersonnaliserSub = 'background'"
+                  @click.stop="
+                    activePersonnaliserSub =
+                      activePersonnaliserSub === 'background'
+                        ? null
+                        : 'background'
+                  "
+                >
+                  <div class="flex text-xs items-center gap-2">
+                    <Sparkles class="h-3.5 w-3.5 text-amber-500" />
+                    <span>{{ languageStore.t("Background") }}</span>
+                  </div>
+                  <ChevronRight class="h-3.5 w-3.5 text-muted-foreground" />
+
+                  <!-- Liste des backgrounds -->
+                  <div
+                    v-if="activePersonnaliserSub === 'background'"
+                    class="absolute left-full top-0 ml-1 w-48 rounded-[3px] border border-border bg-background p-1 text-xs z-50 animate-in fade-in slide-in-from-left-1 duration-100 shadow-xl"
+                  >
+                    <button
+                      v-for="bg in CUSTOM_BACKGROUND_STYLES"
+                      :key="bg.id"
+                      type="button"
+                      @click.stop="setBackgroundStyle(bg.id, bg.label)"
+                      class="w-full text-xs flex items-center justify-between gap-2 px-2 py-1.5 rounded-[3px] hover:bg-muted transition text-left"
+                      :class="{
+                        'font-semibold text-primary bg-muted/60':
+                          currentBgStyle === bg.id,
+                      }"
+                    >
+                      <div class="min-w-0">
+                        <div class="truncate">{{ bg.label }}</div>
+                        <div class="text-[10px] text-muted-foreground truncate">
+                          {{ bg.description }}
+                        </div>
+                      </div>
+                      <Check
+                        v-if="currentBgStyle === bg.id"
+                        class="h-3.5 w-3.5 text-primary shrink-0"
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <div class="my-1 border-t border-border"></div>
+
+                <!-- Option Barre latérale -->
+                <button
+                  type="button"
+                  @click="toggleSidebar"
+                  class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-[3px] hover:bg-muted transition text-left text-foreground"
+                >
+                  <span class="text-xs">{{
+                    languageStore.t("Barre latérale")
+                  }}</span>
+                  <span class="text-[10px] text-muted-foreground font-mono"
+                    >Sidebar</span
+                  >
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
