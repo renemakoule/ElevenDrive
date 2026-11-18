@@ -7,6 +7,7 @@ import { realtimeSocket } from "../../services/realtimeSocketService";
 import ManagerLicenceBanner from "./home/ManagerLicenceBanner.vue";
 import ManagerChartsSection from "./home/ManagerChartsSection.vue";
 import ManagerRecentTransactions from "./home/ManagerRecentTransactions.vue";
+import ManagerDashboardSkeleton from "../common/skeleton/ManagerDashboardSkeleton.vue";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -117,13 +118,19 @@ const tonIcone: Record<string, string> = {
   sky: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
 };
 
+const isInitialLoading = ref(!guichetStore.gerantDashboardData);
+
 onMounted(async () => {
-  await Promise.all([
-    guichetStore.loadGerantDashboard(),
-    guichetStore.loadVehicules(),
-    guichetStore.loadFormules(),
-    authStore.loadProfileByRole(),
-  ]);
+  try {
+    await Promise.all([
+      guichetStore.loadGerantDashboard(),
+      guichetStore.loadVehicules(),
+      guichetStore.loadFormules(),
+      authStore.loadProfileByRole(),
+    ]);
+  } finally {
+    isInitialLoading.value = false;
+  }
   unsubscribeHomeWs = realtimeSocket.subscribe((msg) => {
     if (msg.type === "LIVRET_EMARGEMENT_LIVE" && msg.data) {
       liveLivretActivity.value = {
@@ -150,7 +157,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="space-y-4">
+  <!-- Skeleton Loader d'initialisation -->
+  <ManagerDashboardSkeleton v-if="isInitialLoading && !guichetStore.gerantDashboardData" />
+
+  <div v-else class="space-y-4">
     <!-- En-tête de la vue -->
     <div
       class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"

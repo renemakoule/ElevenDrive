@@ -11,6 +11,7 @@ import EditSchoolModal from "../modals/EditSchoolModal.vue";
 import ManageLicenceModal from "../modals/ManageLicenceModal.vue";
 import ManageModulesModal from "../modals/ManageModulesModal.vue";
 import DeleteSchoolModal from "../modals/DeleteSchoolModal.vue";
+import SuperAdminDashboardSkeleton from "../../common/skeleton/SuperAdminDashboardSkeleton.vue";
 import { Monitor } from "lucide-vue-next";
 
 const props = defineProps<{
@@ -191,8 +192,13 @@ const handleDeleteConfirm = async (schoolId: string, confirmName: string) => {
 
     <!-- Tableau Interactif Style Console Neon / Base de Données -->
     <div class="flex-1 flex overflow-hidden">
+      <!-- État Skeleton Chargement Initial -->
+      <div v-if="isLoading && filteredSchools.length === 0" class="flex-1 p-3 overflow-auto">
+        <SuperAdminDashboardSkeleton :rows="8" />
+      </div>
+
       <!-- Grille des enregistrements -->
-      <div class="flex-1 overflow-auto">
+      <div v-else class="flex-1 overflow-auto">
         <table class="w-full text-left text-xs border-collapse">
           <thead
             class="sticky top-0 bg-muted/80 backdrop-blur-xs border-b border-border text-[11px] text-muted-foreground font-mono uppercase tracking-wider select-none z-10"

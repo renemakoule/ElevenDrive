@@ -29,6 +29,7 @@ import CandidatNavTabs, {
   type CandidatMainTab,
 } from "./tabs/CandidatNavTabs.vue";
 import CandidatHeaderBar from "./tabs/CandidatHeaderBar.vue";
+import CandidatDashboardSkeleton from "../common/skeleton/CandidatDashboardSkeleton.vue";
 import { FileText } from "lucide-vue-next";
 
 const store = useGuichetStore();
@@ -413,6 +414,9 @@ watch(
         >Chargement du dossier apprenant...</span
       >
     </div>
+
+    <!-- Skeleton Chargement Dossier Apprenant -->
+    <CandidatDashboardSkeleton v-else-if="store.loading && !activeCand" />
 
     <!-- Aucun dossier -->
     <div

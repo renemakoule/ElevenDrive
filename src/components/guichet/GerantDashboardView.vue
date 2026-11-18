@@ -6,6 +6,7 @@ import { realtimeSocket } from "../../services/realtimeSocketService";
 import GerantImpayesTab from "./gerant/GerantImpayesTab.vue";
 import GerantAssidusTab from "./gerant/GerantAssidusTab.vue";
 import GerantOverridePinModal from "./gerant/GerantOverridePinModal.vue";
+import GerantDashboardSkeleton from "../common/skeleton/GerantDashboardSkeleton.vue";
 import { ArrowLeft, Check, CheckCircle2, Radio } from "lucide-vue-next";
 
 const store = useGuichetStore();
@@ -17,8 +18,14 @@ const activeTab = ref<TabKey>("impayes");
 const isOverrideModalOpen = ref(false);
 const candToOverride = ref<any>(null);
 
-onMounted(() => {
-  store.loadGerantDashboard();
+const isInitialLoading = ref(!store.gerantDashboardData);
+
+onMounted(async () => {
+  try {
+    await store.loadGerantDashboard();
+  } finally {
+    isInitialLoading.value = false;
+  }
 });
 
 watch(
@@ -145,7 +152,12 @@ const submitOverride = async ({
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col gap-4 overflow-y-auto">
+  <!-- Skeleton Loader -->
+  <GerantDashboardSkeleton
+    v-if="isInitialLoading && !store.gerantDashboardData"
+  />
+
+  <div v-else class="flex flex-1 flex-col gap-4 overflow-y-auto">
     <header
       class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
     >

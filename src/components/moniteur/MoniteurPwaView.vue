@@ -16,6 +16,7 @@ import MoniteurVehiculeAssigneView from "./MoniteurVehiculeAssigneView.vue";
 import MoniteurCalendarBar from "./MoniteurCalendarBar.vue";
 import MoniteurPlanningListSection from "./MoniteurPlanningListSection.vue";
 import MoniteurSidebarSummary from "./MoniteurSidebarSummary.vue";
+import MoniteurDashboardSkeleton from "../common/skeleton/MoniteurDashboardSkeleton.vue";
 import { useMoniteurPlanning } from "./useMoniteurPlanning";
 
 const store = useGuichetStore();
@@ -316,6 +317,9 @@ const handleChangerStatutVehicule = async (
       :is-updating-statut="isUpdatingVehiculeStatut"
       @change-statut="handleChangerStatutVehicule"
     />
+
+    <!-- Skeleton Planning Moniteur -->
+    <MoniteurDashboardSkeleton v-else-if="isLoading && rawSessions.length === 0" />
 
     <template v-else>
       <MoniteurCalendarBar

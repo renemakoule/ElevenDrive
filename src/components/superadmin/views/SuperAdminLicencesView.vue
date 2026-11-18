@@ -6,6 +6,7 @@ import type {
 } from "../../../types";
 import { superAdminApi } from "../../../services/superAdminService";
 import ManageLicenceModal from "../modals/ManageLicenceModal.vue";
+import Skeleton from "../../common/skeleton/Skeleton.vue";
 import { ShieldCheck, Monitor, Calendar } from "lucide-vue-next";
 
 const props = defineProps<{
@@ -155,7 +156,33 @@ const quickExtend = async (
 
     <!-- Grille des Licences & Quotas -->
     <div class="flex-1 overflow-auto p-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- État Skeleton Chargement -->
+      <div
+        v-if="isLoading && filteredList.length === 0"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      >
+        <div
+          v-for="i in 6"
+          :key="i"
+          class="border border-border rounded-[4px] p-4 bg-card space-y-3"
+        >
+          <div class="flex items-center justify-between">
+            <Skeleton class="h-4 w-32" />
+            <Skeleton class="h-5 w-16 rounded-full" />
+          </div>
+          <Skeleton class="h-3 w-48" />
+          <div class="space-y-2 pt-2 border-t border-border">
+            <Skeleton class="h-3 w-28" />
+            <Skeleton class="h-4 w-full rounded" />
+            <div class="flex items-center justify-between pt-1">
+              <Skeleton class="h-3 w-20" />
+              <Skeleton class="h-6 w-20 rounded-[3px]" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
           v-for="school in filteredList"
           :key="school.id"

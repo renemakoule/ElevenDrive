@@ -1,0 +1,9 @@
+export { default as Skeleton } from "./Skeleton.vue";
+export { default as KpiGridSkeleton } from "./KpiGridSkeleton.vue";
+export { default as TableSkeleton } from "./TableSkeleton.vue";
+export { default as ManagerDashboardSkeleton } from "./ManagerDashboardSkeleton.vue";
+export { default as SecretaireDashboardSkeleton } from "./SecretaireDashboardSkeleton.vue";
+export { default as GerantDashboardSkeleton } from "./GerantDashboardSkeleton.vue";
+export { default as MoniteurDashboardSkeleton } from "./MoniteurDashboardSkeleton.vue";
+export { default as CandidatDashboardSkeleton } from "./CandidatDashboardSkeleton.vue";
+export { default as SuperAdminDashboardSkeleton } from "./SuperAdminDashboardSkeleton.vue";

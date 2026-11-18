@@ -5,6 +5,8 @@ import { useAuthStore } from "../../stores/authStore";
 import { realtimeSocket } from "../../services/realtimeSocketService";
 import type { Candidat } from "../../types";
 import ExportCandidatsButton from "./ExportCandidatsButton.vue";
+import SecretaireDashboardSkeleton from "../common/skeleton/SecretaireDashboardSkeleton.vue";
+import TableSkeleton from "../common/skeleton/TableSkeleton.vue";
 import {
   UserPlus,
   ChevronRight,
@@ -40,12 +42,22 @@ const refreshData = async () => {
   }
 };
 
+const isInitialLoading = ref(
+  guichetStore.searchResults.length === 0 || !guichetStore.formules.length,
+);
+
 onMounted(async () => {
   if (
     guichetStore.searchResults.length === 0 ||
     !guichetStore.formules.length
   ) {
-    await guichetStore.init();
+    try {
+      await guichetStore.init();
+    } finally {
+      isInitialLoading.value = false;
+    }
+  } else {
+    isInitialLoading.value = false;
   }
 });
 
@@ -184,7 +196,12 @@ const selectCandidate = async (id: string) => {
 </script>
 
 <template>
-  <div class="space-y-4 bg-background">
+  <!-- Skeleton initial -->
+  <SecretaireDashboardSkeleton
+    v-if="isInitialLoading && guichetStore.searchResults.length === 0"
+  />
+
+  <div v-else class="space-y-4 bg-background">
     <!-- ═════════ En-tête ═════════ -->
     <header
       class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
@@ -481,6 +498,11 @@ const selectCandidate = async (id: string) => {
           </table>
         </div>
       </template>
+
+      <!-- État Chargement / Rafraîchissement -->
+      <div v-else-if="isRefreshing || guichetStore.loading" class="p-4">
+        <TableSkeleton :rows="5" :header-cols="5" :show-search="false" />
+      </div>
 
       <!-- État vide -->
       <div
